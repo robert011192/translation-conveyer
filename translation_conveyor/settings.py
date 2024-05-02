@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,12 +20,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-dddc0d1yx9k_4!hq#z#yyc-1_8(fm82^wi2)ey!&h$_77z#88t"
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DJANGO_DEBUG', 'False').lower() in ('true', '1', 't')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '').split(',')
 
 
 # Application definition
@@ -44,6 +44,10 @@ INSTALLED_APPS = [
     "debug_toolbar",
 ]
 
+# Enable debug toolbar only if in debug mode
+if DEBUG:
+    INSTALLED_APPS.append("debug_toolbar")
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -55,6 +59,9 @@ MIDDLEWARE = [
     "simple_history.middleware.HistoryRequestMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
+
+if DEBUG:
+    MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
 
 ROOT_URLCONF = "translation_conveyor.urls"
 
@@ -81,13 +88,13 @@ WSGI_APPLICATION = "translation_conveyor.wsgi.application"
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {
-    "default": {
+     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "app_db",
-        "USER": "app_user",
-        "PASSWORD": "changeme",
-        "HOST": "db",
-        "PORT": "5432",
+        "NAME": os.getenv('POSTGRES_DB', 'app_db'),
+        "USER": os.getenv('POSTGRES_USER', 'app_user'),
+        "PASSWORD": os.getenv('POSTGRES_PASSWORD', 'changeme'),
+        "HOST": os.getenv('POSTGRES_HOST', 'db'),
+        "PORT": os.getenv('POSTGRES_PORT', '5432'),
     }
 }
 
